@@ -585,7 +585,9 @@
                     <div class="table-container">
                         <div class="table-header">
                             <h3>Kehadiran Terbaru</h3>
-                        </div>
+                        </div><button onclick="mulaiPertemuanBaru()" style="margin: 15px 0 15px 20px; padding: 10px 20px; background: #e67e22; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+        🔄 Mulai Pertemuan Baru (Reset Absen)
+    </button>
                         <table>
                             <thead>
                                 <tr>
@@ -766,35 +768,50 @@
 
     <script>
         function populateAttendanceGrid() {
-            const students = [
-            ];
+    // SEKARANG ARRAY STUDENTS SUDAH BERISI DATA MAHASISWA DAN NPM ASLI
+    const students = [
+        { name: 'afrizal',  npm: '21102001', status: 'alpha' },
+        { name: 'fahrizal', npm: '21102002', status: 'alpha' },
+        { name: 'zidan',    npm: '21102003', status: 'alpha' },
+        { name: 'daffa',    npm: '21102015', status: 'alpha' },
+        { name: 'rafino',   npm: '21102005', status: 'alpha' },
+        { name: 'affel',    npm: '21102006', status: 'alpha' }
+    ];
 
-            const grid = document.getElementById('attendanceGrid');
-            grid.innerHTML = '';
+    const grid = document.getElementById('attendanceGrid');
+    if (!grid) return; // Pengaman jika elemen grid belum siap
+    grid.innerHTML = '';
 
-            students.forEach(student => {
-                const div = document.createElement('div');
-                div.className = `attendance-item ${student.status}`;
-                div.innerHTML = `
-                    <div class="student-name">${student.name}</div>
-                    <div class="student-npm">${student.npm}</div>
-                    <div style="font-size: 12px; font-weight: 600;">
-                        ${student.status === 'hadir' ? '✓ Hadir' : 
-                          student.status === 'izin' ? '📋 Izin' : 
-                          student.status === 'sakit' ? '🏥 Sakit' : '✗ Alpha'}
-                    </div>
-                `;
+    students.forEach(student => {
+        const div = document.createElement('div');
+        div.className = `attendance-item ${student.status}`;
+        div.innerHTML = `
+            <div class="student-name" style="font-weight: bold; color: #333;">${student.name}</div>
+            <div class="student-npm" style="color: #666; font-size: 13px; margin: 4px 0;">${student.npm}</div>
+            <div style="font-size: 12px; font-weight: 600;">
+                ${student.status === 'hadir' ? '✓ Hadir' : 
+                  student.status === 'izin' ? '📋 Izin' : 
+                  student.status === 'sakit' ? '🏥 Sakit' : '✗ Alpha'}
+            </div>
+        `;
 
-                div.addEventListener('click', function() {
-                    const statuses = ['hadir', 'izin', 'sakit', 'alpha'];
-                    const currentIndex = statuses.indexOf(student.status);
-                    student.status = statuses[(currentIndex + 1) % statuses.length];
-                    populateAttendanceGrid();
-                });
+        div.addEventListener('click', function() {
+            const statuses = ['hadir', 'izin', 'sakit', 'alpha'];
+            const currentIndex = statuses.indexOf(student.status);
+            student.status = statuses[(currentIndex + 1) % statuses.length];
+            
+            // Update class pembungkusnya agar warna boksnya ikut berubah saat diklik
+            div.className = `attendance-item ${student.status}`;
+            // Update teks statusnya saja agar tidak perlu nge-render ulang seluruh grid
+            div.querySelector('div:last-child').innerHTML = 
+                student.status === 'hadir' ? '✓ Hadir' : 
+                student.status === 'izin' ? '📋 Izin' : 
+                student.status === 'sakit' ? '🏥 Sakit' : '✗ Alpha';
+        });
 
-                grid.appendChild(div);
-            });
-        }
+        grid.appendChild(div);
+    });
+}
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
@@ -864,6 +881,87 @@
                 });
             }
         }
+        function loadAbsensiMahasiswa() {
+    const absensiGlobal = JSON.parse(localStorage.getItem("semuaAbsensi")) || [];
+    const tbody = document.querySelector('table tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = ''; 
+
+    if (absensiGlobal.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding: 20px;">Belum ada riwayat presensi mahasiswa hari ini.</td></tr>`;
+        updateKotakRingkasan(0, 0, 0);
+        return;
+    }
+
+    // 1. Tampilkan semua riwayat ke tabel (data terbaru di atas)
+    [...absensiGlobal].reverse().forEach(item => {
+        const tr = document.createElement('tr');
+        let badgeClass = 'status-alpha';
+        if (item.status === 'Hadir') badgeClass = 'status-hadir';
+        if (item.status === 'Izin') badgeClass = 'status-izin';
+        if (item.status === 'Sakit') badgeClass = 'status-sakit';
+
+        tr.innerHTML = `
+            <td style="font-weight: 600; color: #333;">${item.nama}</td>
+            <td>${item.npm}</td>
+            <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
+            <td>${item.tanggal}</td>
+            <td style="color: #666;">${item.jam}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // =============================================================
+    // KUNCI AMAN: Filter hanya mengambil status TERAKHIR per mahasiswa
+    // =============================================================
+    const statusTerakhirMhs = {};
+    
+    absensiGlobal.forEach(item => {
+        // Abaikan data jika yang masuk adalah akun bernama "dosen"
+        if (item.nama !== 'dosen') { 
+            statusTerakhirMhs[item.nama] = item.status;
+        }
+    });
+
+    // Menghitung total mahasiswa unik yang benar-benar melakukan absen
+    const totalMhsAbsen = Object.keys(statusTerakhirMhs).length; 
+    
+    // Menghitung berapa mahasiswa unik yang status terakhirnya 'Hadir'
+    const totalHadir = Object.values(statusTerakhirMhs).filter(status => status === 'Hadir').length;
+    
+    // Menghitung berapa mahasiswa unik yang status terakhirnya 'Alpha'
+    const totalAlpha = Object.values(statusTerakhirMhs).filter(status => status === 'Alpha').length; 
+
+    // Kirim data yang sudah bersih ke kotak ringkasan atas
+    updateKotakRingkasan(totalMhsAbsen, totalHadir, totalAlpha);
+}
+
+function updateKotakRingkasan(total, hadir, belumHadir) {
+    const cards = document.querySelectorAll('.card .card-value');
+    if (cards.length >= 4) {
+        cards[0].textContent = total; // Menampilkan total mahasiswa unik yang absen
+        cards[1].textContent = total > 0 ? Math.round((hadir / total) * 100) + '%' : '0%'; // Rata-rata hadir akurat (maksimal 100%)
+        cards[2].textContent = total > 0 ? '1' : '0'; // Mengubah tulisan panjang jadi angka pertemuan (1 atau 0)
+        cards[3].textContent = belumHadir; // Menampilkan jumlah mahasiswa yang Alpha
+    }
+}
+// =============================================================
+
+
+// 2. KODINGAN MODAL DI BAWAH INI TETAP DIPERTAHANKAN
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+    }
+});
+
+// 3. DI BAGIAN WINDOW LOAD INI BARU DITAMBAH DI DALAMNYA
+window.addEventListener('load', function() {
+    populateAttendanceGrid();
+    initCharts();
+    loadAbsensiMahasiswa(); // <-- Ditambah baris ini agar otomatis jalan
+});
 
         document.addEventListener('click', function(event) {
             if (event.target.classList.contains('modal')) {
@@ -875,6 +973,14 @@
             populateAttendanceGrid();
             initCharts();
         });
+        function mulaiPertemuanBaru() {
+    if (confirm("Apakah Anda yakin ingin memulai pertemuan baru? Semua data absensi di pertemuan ini akan direset dari nol.")) {
+        // Menghapus database absensi yang menggantung di browser
+        localStorage.removeItem("semuaAbsensi");
+        // Segarkan halaman agar tampilan langsung kosong kembali
+        location.reload();
+    }
+}
     </script>
 </body>
 </html>

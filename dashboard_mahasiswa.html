@@ -435,9 +435,9 @@
             </div>
             <div style="display: flex; gap: 20px; align-items: center;">
                 <div class="user-info">
-                    <div class="user-avatar">M</div>
+                    <div class="user-avatar" id="avatarInisial">M</div>
                     <div class="user-name" id="namaMahasiswa"></div>
-                    <div class="user-id">21102015</div>
+                    <div class="user-id" id="npmMahasiswa">21102015</div>
                 </div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
@@ -663,15 +663,23 @@
             });
         }
 
-        // 4. FUNGSI SIMULASI TOMBOL PRESENSI INTERAKTIF
+        // HAPUS KODE LAMA KAMU, LALU GANTI DENGAN KODE DI BAWAH INI:
         function tambahPresensi(status) {
             const hitungNo = dataPresensi.length + 1;
             const hariIni = new Date();
             const formatTanggal = hariIni.toISOString().split('T')[0]; 
             const formatJam = hariIni.toTimeString().split(' ')[0].substring(0, 5); 
+            
+            // Mengambil nomor id/NPM dari elemen HTML, jika tidak ada pakai default
+            const npmMhs = localStorage.getItem("npm") || '21102015';
+            // Mengambil nama mhs yang sedang login dari sistem
+            const namaMhs = document.getElementById("namaMahasiswa")?.textContent || 'mhs001';
+            
 
             const presensiBaru = {
                 no: hitungNo,
+                nama: namaMhs,
+                npm: npmMhs,
                 tanggal: formatTanggal,
                 pertemuan: `Pertemuan ${hitungNo}`,
                 status: status,
@@ -679,6 +687,14 @@
                 catatan: status === 'Hadir' ? 'Hadir via sistem mandiri' : `Pengajuan status ${status}`
             };
 
+            // 1. Ambil data absensi global yang sudah ada di browser, jika belum ada buat array kosong []
+            let absensiGlobal = JSON.parse(localStorage.getItem("semuaAbsensi")) || [];
+            
+            // 2. Masukkan data presensi baru ke dalam penyimpanan bersama (agar bisa dibaca Dosen)
+            absensiGlobal.push(presensiBaru);
+            localStorage.setItem("semuaAbsensi", JSON.stringify(absensiGlobal));
+
+            // 3. Masukkan juga ke tampilan tabel lokal halaman mahasiswa saat itu
             dataPresensi.push(presensiBaru);
             updateDashboard();
         }
@@ -717,30 +733,48 @@
         }
 
         // 7. MENJALANKAN FUNGSI OTOMATIS SAAT HALAMAN SELESAI DI-LOAD
-        window.addEventListener('load', function() {
-            // Ambil username murni hasil kiriman login.html
-            const username = localStorage.getItem("username");
+      // ========================================================
+// 1. KODE BARU: PAKSA GANTI AVATAR (ANTI-BLOKIR BROWSER)
+// ========================================================
+const paksaGantiAvatar = setInterval(function() {
+    const username = localStorage.getItem("username");
+    if (username) {
+        const hurufDepan = username.charAt(0).toUpperCase(); 
+        
+        // Mencari elemen bulatan berdasarkan class HTML kamu
+        const avatarElement = document.querySelector('.user-avatar') || 
+                              document.getElementById('avatarInisial') || 
+                              document.querySelector('.profile-avatar');
+        
+        if (avatarElement) {
+            avatarElement.textContent = hurufDepan; 
+            clearInterval(paksaGantiAvatar); // Stop jika sudah berhasil ganti
+        }
+    }
+}, 500);
 
-            if (username) {
-                document.getElementById("namaMahasiswa").textContent = username;
-            } else {
-                document.getElementById("namaMahasiswa").textContent = "mhs001";
-            }
+// ========================================================
+// 2. KODE LOAD HALAMAN & TOMBOL ABSENSI
+// ========================================================
+window.addEventListener('load', function() {
+    const username = localStorage.getItem("username");
 
-            // Bangkitkan Grafik dan hitung dashboard pertama kali
-            initChart();       
-            updateDashboard(); 
+    if (username) {
+        document.getElementById("namaMahasiswa").textContent = username;
+    } else {
+        document.getElementById("namaMahasiswa").textContent = "mhs001";
+    }
 
-            // Hubungkan tombol filter agar berfungsi menambahkan data presensi
-            const tombols = document.querySelectorAll('.action-buttons .btn');
-            if(tombols.length >= 5) {
-                tombols[0].onclick = () => renderTable(dataPresensi); // Kembali tampilkan semua data
-                tombols[1].onclick = () => tambahPresensi('Hadir');   
-                tombols[2].onclick = () => tambahPresensi('Izin');    
-                tombols[3].onclick = () => tambahPresensi('Sakit');   
-                tombols[4].onclick = () => tambahPresensi('Alpha');   
-            }
-        });
+    // Hubungkan tombol filter agar berfungsi menambahkan data presensi
+    const tombols = document.querySelectorAll('.action-buttons .btn');
+    if(tombols.length >= 5) {
+        tombols[0].onclick = () => renderTable(dataPresensi); // Kembali tampilkan semua data
+        tombols[1].onclick = () => tambahPresensi('Hadir');   
+        tombols[2].onclick = () => tambahPresensi('Izin');    
+        tombols[3].onclick = () => tambahPresensi('Sakit');   
+        tombols[4].onclick = () => tambahPresensi('Alpha');   
+    }
+});
     </script>
     </script>
 </body>
