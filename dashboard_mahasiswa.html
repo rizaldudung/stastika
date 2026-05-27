@@ -587,23 +587,113 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // 1. DATA DUMMY / STATE AWAL PRESENSI MAHASISWA
+        let dataPresensi = [];
+
+        let attendanceChart = null;
+
+        // 2. FUNGSI UPDATE DASHBOARD (Menghitung Matematika Absensi & Update Progress Bar)
+        function updateDashboard() {
+            const totalPertemuan = dataPresensi.length;
+            const jumlahHadir = dataPresensi.filter(p => p.status === 'Hadir').length;
+            const jumlahIzin = dataPresensi.filter(p => p.status === 'Izin').length;
+            const jumlahSakit = dataPresensi.filter(p => p.status === 'Sakit').length;
+            const jumlahAlpha = dataPresensi.filter(p => p.status === 'Alpha').length;
+
+            const persentase = totalPertemuan > 0 ? Math.round((jumlahHadir / totalPertemuan) * 100) : 0;
+
+            // Update 4 Kotak Informatif Atas (Cards Grid)
+            const cards = document.querySelectorAll('.cards-grid .card-value');
+            if(cards.length >= 4) {
+                cards[0].textContent = jumlahHadir;
+                cards[1].textContent = persentase + '%';
+                cards[2].textContent = jumlahIzin + jumlahSakit; // Gabungan izin & sakit
+                cards[3].textContent = jumlahAlpha;
+            }
+
+            // Update Angka Statistik Grid Bawah
+            const statNumbers = document.querySelectorAll('.stats-grid .stat-number');
+            if(statNumbers.length >= 4) {
+                statNumbers[0].textContent = jumlahHadir;
+                statNumbers[1].textContent = jumlahIzin;
+                statNumbers[2].textContent = jumlahSakit;
+                statNumbers[3].textContent = jumlahAlpha;
+            }
+
+            // Update Visual Progress Bar
+            document.querySelector('.progress-percentage').textContent = persentase + '%';
+            document.querySelector('.progress-fill').style.width = persentase + '%';
+            document.querySelector('.progress-container p').textContent = `${jumlahHadir} dari ${totalPertemuan} pertemuan (Minimum: 75%)`;
+
+            // Render isi Tabel
+            renderTable(dataPresensi);
+
+            // Update Data Grafik Lingkaran
+            if (attendanceChart) {
+                attendanceChart.data.datasets[0].data = [jumlahHadir, jumlahIzin, jumlahSakit, jumlahAlpha];
+                attendanceChart.update();
+            }
+        }
+
+        // 3. FUNGSI UNTUK MERENDER DATA KE DALAM TABEL HTML
+        function renderTable(data) {
+            const tbody = document.querySelector('table tbody');
+            if(!tbody) return;
+            tbody.innerHTML = ''; 
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                let badgeClass = 'status-alpha';
+                if (item.status === 'Hadir') badgeClass = 'status-hadir';
+                if (item.status === 'Izin') badgeClass = 'status-izin';
+                if (item.status === 'Sakit') badgeClass = 'status-sakit';
+
+                tr.innerHTML = `
+                    <td>${item.no}</td>
+                    <td>${item.tanggal}</td>
+                    <td>${item.pertemuan}</td>
+                    <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
+                    <td>${item.jam}</td>
+                    <td>${item.catatan}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 4. FUNGSI SIMULASI TOMBOL PRESENSI INTERAKTIF
+        function tambahPresensi(status) {
+            const hitungNo = dataPresensi.length + 1;
+            const hariIni = new Date();
+            const formatTanggal = hariIni.toISOString().split('T')[0]; 
+            const formatJam = hariIni.toTimeString().split(' ')[0].substring(0, 5); 
+
+            const presensiBaru = {
+                no: hitungNo,
+                tanggal: formatTanggal,
+                pertemuan: `Pertemuan ${hitungNo}`,
+                status: status,
+                jam: status === 'Hadir' ? formatJam : '-',
+                catatan: status === 'Hadir' ? 'Hadir via sistem mandiri' : `Pengajuan status ${status}`
+            };
+
+            dataPresensi.push(presensiBaru);
+            updateDashboard();
+        }
+
+        // 5. INISIALISASI GRAFIK LINGKARAN CHART.JS
         function initChart() {
             const ctx = document.getElementById('attendanceChart')?.getContext('2d');
             if (ctx) {
-                new Chart(ctx, {
+                attendanceChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: ['Hadir', 'Izin', 'Sakit', 'Alpha'],
                         datasets: [{
-                            data: [0, 0, 0, 0],
-                            backgroundColor: [
-                                '#667eea',
-                                '#3498db',
-                                '#f39c12',
-                                '#e74c3c'
-                            ],
+                            data: [0, 0, 0, 0], 
+                            backgroundColor: ['#667eea', '#3498db', '#f39c12', '#e74c3c'],
                             borderColor: 'white',
                             borderWidth: 2
                         }]
@@ -612,26 +702,46 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
+                            legend: { position: 'bottom' }
                         }
                     }
                 });
             }
         }
 
+        // 6. FUNGSI LOGOUT
         function logout() {
             if (confirm('Apakah Anda yakin ingin logout?')) {
                 window.location.href = 'login.html';
             }
         }
-        const username = localStorage.getItem("username");
 
-            document.getElementById("namaMahasiswa").textContent = username;
+        // 7. MENJALANKAN FUNGSI OTOMATIS SAAT HALAMAN SELESAI DI-LOAD
         window.addEventListener('load', function() {
-            initChart();
+            // Ambil username murni hasil kiriman login.html
+            const username = localStorage.getItem("username");
+
+            if (username) {
+                document.getElementById("namaMahasiswa").textContent = username;
+            } else {
+                document.getElementById("namaMahasiswa").textContent = "mhs001";
+            }
+
+            // Bangkitkan Grafik dan hitung dashboard pertama kali
+            initChart();       
+            updateDashboard(); 
+
+            // Hubungkan tombol filter agar berfungsi menambahkan data presensi
+            const tombols = document.querySelectorAll('.action-buttons .btn');
+            if(tombols.length >= 5) {
+                tombols[0].onclick = () => renderTable(dataPresensi); // Kembali tampilkan semua data
+                tombols[1].onclick = () => tambahPresensi('Hadir');   
+                tombols[2].onclick = () => tambahPresensi('Izin');    
+                tombols[3].onclick = () => tambahPresensi('Sakit');   
+                tombols[4].onclick = () => tambahPresensi('Alpha');   
+            }
         });
+    </script>
     </script>
 </body>
 </html>
