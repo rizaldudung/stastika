@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PresensiKu - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            height: 100vh;
+        }
+
+        .left-section {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-section::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -100px;
+            left: -100px;
+        }
+
+        .left-section::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .logo-section {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .logo-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .logo-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .info-section {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .info-section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .info-section p {
+            font-size: 16px;
+            line-height: 1.8;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .features {
+            margin-top: 40px;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+        }
+
+        .right-section {
+            flex: 1;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            position: relative;
+        }
+
+        .role-option input[type="radio"] {
+            display: none;
+        }
+
+        .role-option label {
+            display: block;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0;
+        }
+
+        .role-option input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .remember-forgot a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .remember-forgot a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .signup-link {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .signup-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+            display: block;
+        }
+
+        .alert.success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-section {
+                padding: 30px;
+                min-height: 40vh;
+            }
+
+            .right-section {
+                min-height: 60vh;
+            }
+
+            .logo-title {
+                font-size: 28px;
+            }
+
+            .info-section h2 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LEFT SECTION -->
+        <div class="left-section">
+            <div class="logo-section">
+                <div class="logo">📊</div>
+                <div class="logo-title">PresensiKu</div>
+                <div class="logo-subtitle">Sistem Kehadiran Mahasiswa Universitas Negeri Surabaya</div>
+            </div>
+
+            <div class="info-section">
+                <h2>Kelola Kehadiran dengan Statistik</h2>
+                <p>Platform terpadu untuk mencatat, menganalisis, dan memvisualisasikan data kehadiran mahasiswa dengan mudah dan akurat.</p>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon">✓</div>
+                        <span>Pencatatan otomatis kehadiran</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">✓</div>
+                        <span>Analisis statistik real-time</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">✓</div>
+                        <span>Visualisasi data dengan grafik</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">✓</div>
+                        <span>Laporan terperinci per mahasiswa</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SECTION -->
+        <div class="right-section">
+            <div class="login-box">
+                <div class="login-header">
+                    <h1>Login</h1>
+                    <p>Masuk ke akun Anda untuk melanjutkan</p>
+                </div>
+
+                <div id="alertMessage" class="alert"></div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <!-- ROLE SELECTOR -->
+                    <label style="display: block; margin-bottom: 15px; color: #333; font-weight: 500;">Pilih Role:</label>
+                    <div class="role-selector">
+                        <div class="role-option">
+                            <input type="radio" id="dosen" name="role" value="dosen" checked>
+                            <label for="dosen">Dosen</label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" id="mahasiswa" name="role" value="mahasiswa">
+                            <label for="mahasiswa">Mahasiswa</label>
+                        </div>
+                    </div>
+
+                    <!-- USERNAME -->
+                    <div class="form-group">
+                        <label for="username">Username atau Email</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            placeholder="Masukkan username atau email" 
+                            required
+                        >
+                    </div>
+
+                    <!-- PASSWORD -->
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Masukkan password" 
+                            required
+                        >
+                    </div>
+
+                    <!-- REMEMBER ME -->
+                    <div class="remember-forgot">
+                        <label style="display: flex; align-items: center; margin: 0; cursor: pointer;">
+                            <input type="checkbox" name="remember" style="width: auto; margin-right: 8px; cursor: pointer;">
+                            Ingat saya
+                        </label>
+                        <a href="#">Lupa password?</a>
+                    </div>
+
+                    <!-- LOGIN BUTTON -->
+                    <button type="submit" class="btn-login">Login</button>
+                </form>
+
+                <!-- SIGNUP LINK -->
+                <div class="signup-link">
+                    Belum punya akun? <a href="#">Daftar di sini</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const alertDiv = document.getElementById('alertMessage');
+
+            if (!username || !password) {
+                showAlert('Mohon isi semua field', 'error', alertDiv);
+                return;
+            }
+
+            console.log('Login attempt:', { role, username, password });
+            
+            setTimeout(() => {
+                if (username === 'dosen' && password === '123456') {
+                    window.location.href = 'dashboard_dosen.html';
+                } else if (username === 'mhs123' && password === '123456') {
+                    window.location.href = 'dashboard_mahasiswa.html';
+                } else {
+                    showAlert('Username atau password salah', 'error', alertDiv);
+                }
+            }, 500);
+        }
+
+        function showAlert(message, type, element) {
+            element.textContent = message;
+            element.className = `alert ${type}`;
+            element.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

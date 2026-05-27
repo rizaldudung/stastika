@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Mahasiswa - PresensiKu</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header-info h1 {
+            font-size: 28px;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .header-info p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .user-id {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* LOGOUT BUTTON */
+        .logout-btn {
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        /* CARDS */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .card-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+
+        /* WARNING CARD */
+        .warning-card {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+            border-left: 4px solid #f39c12;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .warning-card h3 {
+            color: #856404;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-card p {
+            color: #856404;
+            font-size: 14px;
+        }
+
+        /* CONTENT SECTIONS */
+        .section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 25px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .section-header h2 {
+            color: #667eea;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .section-content {
+            padding: 25px;
+        }
+
+        /* ATTENDANCE TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* STATUS BADGES */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-hadir {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-izin {
+            background: #cce5ff;
+            color: #0056b3;
+        }
+
+        .status-sakit {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-alpha {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .progress-label-text {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .progress-percentage {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        /* CHART */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        /* ACTION BUTTONS */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+        }
+
+        /* TIMELINE */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .timeline-date {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .timeline-status {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* INFO BOX */
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .info-box p {
+            color: #0056b3;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-info {
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-info">
+                <h1>Dashboard Saya</h1>
+                <p>Kelola data kehadiran dan pantau progress Anda</p>
+            </div>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div class="user-info">
+                    <div class="user-avatar">M</div>
+                    <div class="user-name">Budi Santoso</div>
+                    <div class="user-id">21102015</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- WARNING ALERT (jika kehadiran < 75%) -->
+        <!-- Uncomment untuk menampilkan jika perlu
+        <div class="warning-card">
+            <h3>⚠️ Peringatan</h3>
+            <p>Kehadiran Anda saat ini 72%, di bawah standar minimum 75%. Anda berisiko tidak memenuhi syarat ujian. Segera hadir di pertemuan berikutnya.</p>
+        </div>
+        -->
+
+        <!-- STATISTICS CARDS -->
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-label">Total Hadir</div>
+                <div class="card-value">0</div>
+                <div class="card-subtitle">Semua pertemuan</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Persentase Kehadiran</div>
+                <div class="card-value">0%</div>
+                <div class="card-subtitle">Sempurna</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Total Izin</div>
+                <div class="card-value">0</div>
+                <div class="card-subtitle">Tidak ada izin</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Total Alpha</div>
+                <div class="card-value">0</div>
+                <div class="card-subtitle">Tidak ada alpha</div>
+            </div>
+        </div>
+
+        <!-- KEHADIRAN SECTION -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📋 Status Kehadiran Saya</h2>
+            </div>
+            <div class="section-content">
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">Semua</button>
+                    <button class="btn btn-secondary">Hadir</button>
+                    <button class="btn btn-secondary">Izin</button>
+                    <button class="btn btn-secondary">Sakit</button>
+                    <button class="btn btn-secondary">Alpha</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Pertemuan</th>
+                            <th>Status</th>
+                            <th>Jam Absen</th>
+                            <th>Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- STATISTIK KEHADIRAN SECTION -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📊 Statistik Kehadiran</h2>
+            </div>
+            <div class="section-content">
+                <!-- PROGRESS BAR -->
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span class="progress-label-text">Progress Kehadiran</span>
+                        <span class="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <p style="font-size: 12px; color: #7f8c8d; margin-top: 8px;">0 dari 0 pertemuan (Minimum: 75%)</p>
+                </div>
+
+                <!-- STATS GRID -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Hadir</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Izin</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Sakit</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Alpha</div>
+                    </div>
+                </div>
+
+                <!-- CHART -->
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFO SECTION -->
+        <div class="section">
+            <div class="section-header">
+                <h2>ℹ️ Informasi Penting</h2>
+            </div>
+            <div class="section-content"><h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">Catatan Penting:</h3>
+                <ul style="color: #666; font-size: 14px; line-height: 1.8;">
+                    <li>Persentase kehadiran dihitung berdasarkan jumlah pertemuan yang dihadiri dibagi total pertemuan dikali 100%</li>
+                    <li>Rumus: (Total Hadir ÷ Total Pertemuan) × 100% = Persentase Kehadiran</li>
+                    <li>Status izin dan sakit tidak mengurangi persentase kehadiran, tetapi alpha akan mengurangi</li>
+                    <li>Minimum kehadiran untuk memenuhi syarat ujian adalah 75%</li>
+                    <li>Jika kehadiran Anda di bawah 75%, Anda tidak diizinkan mengikuti ujian akhir</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ATTENDANCE HISTORY SECTION -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📅 Timeline Kehadiran</h2>
+            </div>
+            <div class="section-content">
+                <div class="timeline">
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="text-align: center; padding: 30px 0; color: white;">
+            <p style="font-size: 12px; opacity: 0.8;">StatAttend © 2024 - Sistem Kehadiran Mahasiswa Berbasis Statistik</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function initChart() {
+            const ctx = document.getElementById('attendanceChart')?.getContext('2d');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Hadir', 'Izin', 'Sakit', 'Alpha'],
+                        datasets: [{
+                            data: [0, 0, 0, 0],
+                            backgroundColor: [
+                                '#667eea',
+                                '#3498db',
+                                '#f39c12',
+                                '#e74c3c'
+                            ],
+                            borderColor: 'white',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                window.location.href = 'login.html';
+            }
+        }
+        window.addEventListener('load', function() {
+            initChart();
+        });
+    </script>
+</body>
+</html>
