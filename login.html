@@ -427,36 +427,74 @@
 
     <script>
         function handleLogin(event) {
-            event.preventDefault();
-            
-            const role = document.querySelector('input[name="role"]:checked').value;
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const alertDiv = document.getElementById('alertMessage');
+    event.preventDefault();
 
-            if (!username || !password) {
-                showAlert('Mohon isi semua field', 'error', alertDiv);
+    const role = document.querySelector('input[name="role"]:checked').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const alertDiv = document.getElementById('alertMessage');
+
+    // akun mahasiswa
+    const akunMahasiswa = [
+        { username: 'mhs001', password: '123456' },
+        { username: 'mhs002', password: '222222' },
+        { username: 'mhs003', password: '333333' },
+        { username: 'mhs004', password: '444444' },
+        { username: 'mhs005', password: '555555' },
+        { username: 'mhs006', password: '666666' }
+    ];
+
+    // validasi kosong
+    if (username === '' || password === '') {
+        showAlert('Mohon isi semua field', 'error', alertDiv);
+        return;
+    }
+
+    setTimeout(() => {
+
+        // LOGIN DOSEN
+        if (
+            role === 'dosen' &&
+            username === 'dosen' &&
+            password === '123456'
+        ) {
+
+            // simpan username dosen
+            localStorage.setItem("username", username);
+
+            window.location.href = 'dashboard_dosen.html';
+            return;
+        }
+
+        // LOGIN MAHASISWA
+        if (role === 'mahasiswa') {
+
+            const mahasiswa = akunMahasiswa.find(function(akun) {
+                return akun.username === username &&
+                       akun.password === password;
+            });
+
+            if (mahasiswa) {
+
+                // simpan username mahasiswa
+                localStorage.setItem("username", username);
+
+                window.location.href = 'dashboard_mahasiswa.html';
                 return;
             }
-
-            console.log('Login attempt:', { role, username, password });
-            
-            setTimeout(() => {
-                if (username === 'dosen' && password === '123456') {
-                    window.location.href = 'dashboard_dosen.html';
-                } else if (username === 'mhs123' && password === '123456') {
-                    window.location.href = 'dashboard_mahasiswa.html';
-                } else {
-                    showAlert('Username atau password salah', 'error', alertDiv);
-                }
-            }, 500);
         }
 
-        function showAlert(message, type, element) {
-            element.textContent = message;
-            element.className = `alert ${type}`;
-            element.style.display = 'block';
-        }
+        // GAGAL LOGIN
+        showAlert('Username atau password salah', 'error', alertDiv);
+
+    }, 500);
+}
+
+function showAlert(message, type, element) {
+    element.textContent = message;
+    element.className = `alert ${type}`;
+    element.style.display = 'block';
+}
     </script>
 </body>
 </html>
